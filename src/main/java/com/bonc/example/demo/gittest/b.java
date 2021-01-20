@@ -9,5 +9,7 @@ package com.bonc.example.demo.gittest;
 public class b {
     public static void main(String[] args) {
         int a =2;
+
+        String b ="2";
     }
 }
