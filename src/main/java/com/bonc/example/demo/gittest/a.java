@@ -8,4 +8,8 @@ package com.bonc.example.demo.gittest;
  */
 public class a {
 
+    public static void main(String[] args) {
+
+    }
+
 }
