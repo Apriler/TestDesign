@@ -1,5 +1,7 @@
 package com.bonc.example.demo.string;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +28,12 @@ public class Test2 {
 //
 //        System.out.println(dataSql.toString());
 
-        System.out.println(TimeUnit.MINUTES.toMillis(2));
+//        System.out.println(TimeUnit.MINUTES.toMillis(2));
+        List<String> a = new ArrayList<>();
+        a.add("111");
+        a.add("111");
+        a.add("111");
+        a.add("111");
+        System.out.println(String.join(",",a));
     }
 }
