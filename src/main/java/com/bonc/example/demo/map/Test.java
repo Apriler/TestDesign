@@ -19,9 +19,10 @@ public class Test {
         a.add("name");a.add( "张三");
 
         map.put("aa",a);
-        List<String> a1 = map.get("aa");
-        a1.add("age");a1.add( "22");
-        a1.add("hobby");a1.add( "篮球");
+//        List<String> a1 = map.get("aa");
+//        a1.add("age");a1.add( "22");
+//        a1.add("hobby");a1.add( "篮球");
+        a.add( "篮球");
         for (String s : map.keySet()) {
             map.get(s).forEach(System.out::println);
         }

@@ -1,5 +1,7 @@
 package com.bonc.example.demo.enumtest;
 
+import java.util.Arrays;
+
 /**
  * @author luoaojin
  * @CreateTime 2019-02-26
@@ -23,4 +25,10 @@ public enum Color implements Print{
         System.out.println(c);
     }
 
+    public static void main(String[] args) {
+//        Arrays.asList(Color.values());
+//        System.out.println();
+        Integer a = null;
+        System.out.println(null == a);
+    }
 }
