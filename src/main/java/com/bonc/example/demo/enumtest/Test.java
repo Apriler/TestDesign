@@ -25,9 +25,12 @@ public class Test {
 
 //        System.out.println(Color.BLACK.equals( Color.BLACK));
 
-        String a = "running";
-        if (!"Stopping".equals(a) && !"Restarting".equals(a)){
-            System.out.println("-0-----------");
-        }
+//        String a = "running";
+//        if (!"Stopping".equals(a) && !"Restarting".equals(a)){
+//            System.out.println("-0-----------");
+//        }
+
+        String a = "DataNode";
+        InstanceType.valueOf(a);
     }
 }

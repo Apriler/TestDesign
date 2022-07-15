@@ -17,51 +17,54 @@ public class MyThread4 {
     public static void main(String[] args) {
 
         new Thread(() -> {
-//            customer.heartBeatsQueue.add("aaa");
+            customer.heartBeatsQueue.add("aaa");
         }).start();
     }
 }
 
 class customer {
     public static ConcurrentLinkedQueue<String> heartBeatsQueue = new ConcurrentLinkedQueue<>();
-
+    public static Executor executor = Executors.newSingleThreadExecutor();
     public static void main(String[] args) throws IOException {
 //        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("heartbeat-monitor-%d").build();
-        Executor executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
 
-            int count = 0;
-            int sum = 0;
-            while (true) {
+        for (int i = 0; i < 10; i++) {
+            executor.execute(() -> {
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                int count = 0;
+                int sum = 0;
+                while (true) {
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 //                if (count == 101) {
 //                    break;
 //                }
-                if (count == 20) {
-                    sum = sum + count;
-                    count++;
-                    System.out.println("error---------------");
+                    if (count == 20) {
+                        sum = sum + count;
+                        count++;
+                        System.out.println("error---------------");
 //                    throw new RuntimeException("我是异常");
-                    try {
+                        try {
 
-                        System.out.println(1/0);
-                    }catch (Exception ex){
-                        executor.execute(Thread.currentThread());
+                            System.out.println(1/0);
+                        }catch (Exception ex){
+                            executor.execute(Thread.currentThread());
+                        }
                     }
+                    System.out.println("customer.main");
+                    count++;
+
+
                 }
-                System.out.println("customer.main");
-                count++;
+            });
+        }
 
 
-            }
-        });
-
-        System.in.read();
+//        System.in.read();
 
     }
 }

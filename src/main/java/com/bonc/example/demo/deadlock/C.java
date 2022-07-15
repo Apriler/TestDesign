@@ -1,6 +1,6 @@
 package com.bonc.example.demo.deadlock;
 
-import com.sun.javaws.Main;
+//import com.sun.javaws.Main;
 
 import java.util.Scanner;
 

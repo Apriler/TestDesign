@@ -1,7 +1,13 @@
 package com.bonc.example.demo.threadtest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.logging.Handler;
 
 /**
  * @author luoaojin
@@ -9,6 +15,9 @@ import java.util.concurrent.FutureTask;
  * @Description
  */
 public class Test {
+
+    public static final Map<String, Vo> cache = new HashMap<>();
+
     public static void main(String[] args) throws ExecutionException, InterruptedException {
 //        String  name ="aaa";
 //        new Thread(()->{
@@ -24,19 +33,66 @@ public class Test {
 //            }
 //        }).start();
 //        new MyThread("s").start();
-        MyThread1 t1 = new MyThread1();
-//        MyThread1 t2 = new MyThread1();
-        FutureTask<String> task1 = new FutureTask<String>(t1);
-        FutureTask<String> task2 = new FutureTask<String>(t1);
-//
-        new Thread(task1).start();
-        new Thread(task2).start();
-//        System.out.println(task1.get());
-//        System.out.println(task2.get());
-//        MyThread2 a = new MyThread2();
-//        a.run();
-//        new Thread(a).start();
+        cache.put("aaa",new Vo(1));
+        CountDownLatch latch = new CountDownLatch(100);
+        for (int i = 0; i < 100; i++) {
+            new Thread(new Thread1(latch)).start();
+        }
+        new Thread(new Thread2()).start();
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
+    }
 
+    static class Thread1 implements Runnable{
+        CountDownLatch latch;
+
+        public Thread1(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void run() {
+            Vo aaa = cache.get("aaa");
+            Integer num = aaa.getNum();
+            num +=1;
+            latch.countDown();
+        }
+    }
+    static class Thread2 implements Runnable{
+
+        @Override
+        public void run() {
+
+            while (true){
+                try {
+
+                    Thread.sleep(1000);
+                    System.out.println(cache.get("aaa").num);
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    static class Vo{
+        private Integer num;
+
+        public Vo(Integer num) {
+            this.num = num;
+        }
+
+        public Integer getNum() {
+            return num;
+        }
+
+        public void setNum(Integer num) {
+            this.num = num;
+        }
     }
 }

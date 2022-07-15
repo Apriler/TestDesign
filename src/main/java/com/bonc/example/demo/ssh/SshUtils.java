@@ -21,6 +21,7 @@ import java.util.Vector;
  */
 public class SshUtils {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(com.bonc.example.demo.ssh.SshUtils.class);
 
 	private HostInfo hostInfo;
 
@@ -28,73 +29,6 @@ public class SshUtils {
 
 		hostInfo = new HostInfo(ip, port, user, password, charset);
 	}
-	/**
-	 * 获取shell 执行结果
-	 * @param session
-	 * @param command
-	 * @return
-	 * @throws BddsException
-	 */
-	public Map<String, String> getShellResult(Session session, String command) {
-//		LOGGER.info("------execute shell : {} ------", command);
-		InputStream infoIs = null;
-		InputStream errIs = null;
-		ChannelExec exec = null;
-		Channel channel = null;
-		Map<String, String> result = new HashMap<>();
-		try {
-			channel = session.openChannel("exec");
-			exec = (ChannelExec) channel;
-			exec.setCommand(command);
-			exec.connect();
-			infoIs = exec.getInputStream();
-			errIs = exec.getErrStream();
-			BufferedInputStream infoBis = new BufferedInputStream(infoIs);
-			BufferedInputStream errBis = new BufferedInputStream(errIs);
-			String info = null;
-			String error = null;
-			// shell 执行结果
-			int infoBr = 0;
-			byte[] infoArr = new byte[1024];
-			while ((infoBr = infoBis.read(infoArr)) != -1) {
-				//将读取的字节转为字符串对象
-				info = new String(infoArr, 0, infoBr).trim();
-//				LOGGER.info(info);
-			}
-			result.put("info", info);
-			// shell 执行异常
-			byte[] errArr = new byte[1024];
-			int errBr = 0;
-			while ((errBr = errBis.read(errArr)) != -1) {
-				//将读取的字节转为字符串对象
-				error = new String(errArr, 0, errBr);
-//				LOGGER.info(error);
-			}
-			result.put("error", error);
-			return result;
-		} catch (Exception e) {
-//			throw new BddsException("execute shell failed !", e);
-		} finally {
-			try {
-				if (infoIs != null) {
-					infoIs.close();
-				}
-				if (errIs != null) {
-					errIs.close();
-				}
-				if (channel != null) {
-					channel.disconnect();
-				}
-				if (exec != null) {
-					exec.disconnect();
-				}
-			} catch (IOException e) {
-//				LOGGER.error("close InputStream failed ! ", e);
-			}
-		}
-		return new HashMap<>();
-	}
-
 
 	/**
 	 * 远程 shell 命令
@@ -105,8 +39,8 @@ public class SshUtils {
 	 * @throws JSchException
 	 * @throws IOException
 	 */
-	public void shell(Session session, String command){
-		System.out.println("execute shell : "+ command);
+	public void shell(Session session, String command) throws BddsException {
+		LOGGER.info("------execute shell : {} ------", command);
 		InputStream infoIs = null;
 		InputStream errIs = null;
 		ChannelExec exec = null;
@@ -128,19 +62,18 @@ public class SshUtils {
 			while ((infoBr = infoBis.read(infoArr)) != -1) {
 				//将读取的字节转为字符串对象
 				info = new String(infoArr, 0, infoBr);
-				System.out.print(info);
+				LOGGER.info(info);
 			}
 			// shell 执行异常
-			byte[] errArr = new byte[10240];
+			byte[] errArr = new byte[1024];
 			int errBr = 0;
 			while ((errBr = errBis.read(errArr)) != -1) {
 				//将读取的字节转为字符串对象
 				error = new String(errArr, 0, errBr);
-				System.out.print(error);
+				LOGGER.info(error);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-//			throw new BddsException("execute shell failed !", e);
+			throw new BddsException("execute shell failed !", e);
 		} finally {
 			try {
 				if (infoIs != null) {
@@ -156,63 +89,126 @@ public class SshUtils {
 					exec.disconnect();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOGGER.error("close InputStream failed ! ", e);
 			}
 		}
-
 	}
 
+	/**
+	 * 获取shell 执行结果
+	 * @param session
+	 * @param command
+	 * @return
+	 * @throws BddsException
+	 */
+	public Map<String, String> getShellResult(Session session, String command) throws BddsException {
+		LOGGER.info("------execute shell : {} ------", command);
+		InputStream infoIs = null;
+		InputStream errIs = null;
+		ChannelExec exec = null;
+		Channel channel = null;
+		Map<String,String> result = new HashMap<>();
+		try {
+			channel = session.openChannel("exec");
+			exec = (ChannelExec) channel;
+			exec.setCommand(command);
+			exec.connect();
+			infoIs = exec.getInputStream();
+			errIs = exec.getErrStream();
+			BufferedInputStream infoBis = new BufferedInputStream(infoIs);
+			BufferedInputStream errBis = new BufferedInputStream(errIs);
+			String info = null;
+			String error = null;
+			// shell 执行结果
+			int infoBr = 0;
+			byte[] infoArr = new byte[1024];
+			while ((infoBr = infoBis.read(infoArr)) != -1) {
+				//将读取的字节转为字符串对象
+				info = new String(infoArr, 0, infoBr);
+				LOGGER.info(info);
+			}
+			result.put("info",info);
+			// shell 执行异常
+			byte[] errArr = new byte[1024];
+			int errBr = 0;
+			while ((errBr = errBis.read(errArr)) != -1) {
+				//将读取的字节转为字符串对象
+				error = new String(errArr, 0, errBr);
+				LOGGER.info(error);
+			}
+			result.put("error",error);
+			LOGGER.info("result",result);
+			return result;
+		} catch (Exception e) {
+			throw new BddsException("execute shell failed !", e);
+		} finally {
+			try {
+				if (infoIs != null) {
+					infoIs.close();
+				}
+				if (errIs != null) {
+					errIs.close();
+				}
+				if (channel != null) {
+					channel.disconnect();
+				}
+				if (exec != null) {
+					exec.disconnect();
+				}
+			} catch (IOException e) {
+				LOGGER.error("close InputStream failed ! ", e);
+			}
+		}
+	}
 
-
-
-//	/**
-//	 * 推送本地目录下所有文件到远端主机
-//	 *
-//	 * @param srcDir
-//	 * @param destDir
-//	 * @throws BddsException
-//	 */
-//	public String pushFiles(String srcDir, String destDir)
-//			throws JSchException, SftpException, IOException, BddsException {
-//		Session session = connect();
-//		Channel channel = session.openChannel("sftp");
-//		channel.connect();
-//		ChannelSftp sftp = (ChannelSftp) channel;
-//		LOGGER.info("Pushing idl in dir [{}] to [{}@{}:{}] ......", srcDir, hostInfo.user, hostInfo.ip, destDir);
-//		File dir = new File(srcDir);
-//		if (!dir.exists() || dir.isFile()) {
-//			LOGGER.error("Dir [{}] not exist !", srcDir);
-//			return null;
-//		}
-//		// 如果目标目录不存在，创建目录
-//		try {
-//			Vector content = sftp.ls(destDir);
-//			if (null == content) {
-//				sftp.mkdir(destDir);
-//			}
-//		} catch (SftpException e) {
-//			sftp.mkdir(destDir);
-//		}
-//		// 进入目标路径
-//		sftp.cd(destDir);
-//		File[] files = dir.listFiles();
-//		for (File def : files) {
-//			if (def.isDirectory()) {
-//				continue;
-//			}
-//			LOGGER.info("Pushing file [{}] ......", def.getName());
-//			InputStream ins = new FileInputStream(def);
-//			sftp.put(ins, new String(def.getName().getBytes(), hostInfo.charset));
-//			try {
-//				ins.close();
-//			} catch (IOException e) {
-//				LOGGER.error("pushFiles failed", e);
-//			}
-//		}
-//		channel.disconnect();
-//		session.disconnect();
-//		return destDir;
-//	}
+	/**
+	 * 推送本地目录下所有文件到远端主机
+	 * 
+	 * @param srcDir
+	 * @param destDir
+	 * @throws BddsException
+	 */
+	public String pushFiles(String srcDir, String destDir)
+			throws JSchException, SftpException, IOException, BddsException {
+		Session session = connect();
+		Channel channel = session.openChannel("sftp");
+		channel.connect();
+		ChannelSftp sftp = (ChannelSftp) channel;
+		LOGGER.info("Pushing idl in dir [{}] to [{}@{}:{}] ......", srcDir, hostInfo.user, hostInfo.ip, destDir);
+		File dir = new File(srcDir);
+		if (!dir.exists() || dir.isFile()) {
+			LOGGER.error("Dir [{}] not exist !", srcDir);
+			return null;
+		}
+		// 如果目标目录不存在，创建目录
+		try {
+			Vector content = sftp.ls(destDir);
+			if (null == content) {
+				sftp.mkdir(destDir);
+			}
+		} catch (SftpException e) {
+			sftp.mkdir(destDir);
+		}
+		// 进入目标路径
+		sftp.cd(destDir);
+		File[] files = dir.listFiles();
+		for (File def : files) {
+			if (def.isDirectory()) {
+				continue;
+			}
+			LOGGER.info("Pushing file [{}] ......", def.getName());
+			InputStream ins = new FileInputStream(def);
+			sftp.put(ins, new String(def.getName().getBytes(), hostInfo.charset));
+			try {
+				ins.close();
+			} catch (IOException e) {
+				LOGGER.error("pushFiles failed", e);
+			}
+		}
+		channel.disconnect();
+		session.disconnect();
+		return destDir;
+	}
 
 	/**
 	 * 获取session
@@ -227,7 +223,7 @@ public class SshUtils {
 		try {
 			session = connect();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("getSession failed !", e);
 		}
 		return session;
 	}
@@ -245,7 +241,7 @@ public class SshUtils {
 		try {
 			channel = session.openChannel("sftp");
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("getChannel failed !", e);
 		}
 		return channel;
 	}
@@ -264,7 +260,7 @@ public class SshUtils {
 			channel.connect();
 			sftp = (ChannelSftp) channel;
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("getSftp failed !", e);
 		}
 		return sftp;
 	}
@@ -290,7 +286,7 @@ public class SshUtils {
 				session.disconnect();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.error("closeSfpt failed !", e);
 		}
 	}
 
@@ -307,7 +303,7 @@ public class SshUtils {
 				session.disconnect();
 			}
 		}catch(Exception e){
-			e.printStackTrace();
+			LOGGER.error("closeSession failed!");
 		}
 	}
 	/**
@@ -320,55 +316,55 @@ public class SshUtils {
 	 *            远端主机目录
 	 * @throws SftpException
 	 */
-//	public void pushFile(ChannelSftp sftp, String srcFile, String destDir) throws SftpException {
-//		LOGGER.info("Pushing file [{}] to [{}@{}:{}] ......", srcFile, hostInfo.user, hostInfo.ip, destDir);
-//		File file = new File(srcFile);
-//		if (!file.exists() || file.isDirectory()) {
-//			LOGGER.error("File [{}] not exist !", srcFile);
-//		}
-//		// 进入目标路径
-//		sftp.cd(destDir);
-//		try (InputStream ins = new FileInputStream(file)) {// jdk1.7特性，自动关闭资源，SonarLink建议
-//			sftp.put(ins, new String(file.getName().getBytes(), hostInfo.charset));
-//		} catch (Exception e) {
-//			LOGGER.error("pushFile failed !", e);
-//		}
-//	}
-//
-//	/**
-//	 * 从远端主机拉取文件
-//	 *
-//	 * @param srcFile
-//	 * @param destDir
-//	 * @return
-//	 * @throws JSchException
-//	 * @throws SftpException
-//	 * @throws BddsException
-//	 */
-//	public String pullFile(String srcFile, String destDir) throws JSchException, SftpException, BddsException {
-//		Session session = connect();
-//		Channel channel = session.openChannel("sftp");
-//		channel.connect();
-//		ChannelSftp sftp = (ChannelSftp) channel;
-//		LOGGER.info("Pulling file from [{}@{}:{}] to [{}] ......", hostInfo.user, hostInfo.ip, srcFile, destDir);
-//		Vector conts = sftp.ls(srcFile);
-//		if (conts.size() > 1 || conts.size() < 1) {
-//			LOGGER.error("Remote file [{}] not exist !", srcFile);
-//			return null;
-//		}
-//		String fileName = ((ChannelSftp.LsEntry) conts.get(0)).getFilename();
-//		File directory = new File(destDir);
-//		if (!directory.exists()) {
-//			directory.mkdirs();
-//		}
-//		// 拉取文件
-//		sftp.get(srcFile, destDir);
-//		// 本地文件路径
-//		String destFile = directory.getAbsolutePath() + File.separator + fileName;
-//		channel.disconnect();
-//		session.disconnect();
-//		return destFile;
-//	}
+	public void pushFile(ChannelSftp sftp, String srcFile, String destDir) throws SftpException {
+		LOGGER.info("Pushing file [{}] to [{}@{}:{}] ......", srcFile, hostInfo.user, hostInfo.ip, destDir);
+		File file = new File(srcFile);
+		if (!file.exists() || file.isDirectory()) {
+			LOGGER.error("File [{}] not exist !", srcFile);
+		}
+		// 进入目标路径
+		sftp.cd(destDir);
+		try (InputStream ins = new FileInputStream(file)) {// jdk1.7特性，自动关闭资源，SonarLink建议
+			sftp.put(ins, new String(file.getName().getBytes(), hostInfo.charset));
+		} catch (Exception e) {
+			LOGGER.error("pushFile failed !", e);
+		}
+	}
+
+	/**
+	 * 从远端主机拉取文件
+	 * 
+	 * @param srcFile
+	 * @param destDir
+	 * @return
+	 * @throws JSchException
+	 * @throws SftpException
+	 * @throws BddsException
+	 */
+	public String pullFile(String srcFile, String destDir) throws JSchException, SftpException, BddsException {
+		Session session = connect();
+		Channel channel = session.openChannel("sftp");
+		channel.connect();
+		ChannelSftp sftp = (ChannelSftp) channel;
+		LOGGER.info("Pulling file from [{}@{}:{}] to [{}] ......", hostInfo.user, hostInfo.ip, srcFile, destDir);
+		Vector conts = sftp.ls(srcFile);
+		if (conts.size() > 1 || conts.size() < 1) {
+			LOGGER.error("Remote file [{}] not exist !", srcFile);
+			return null;
+		}
+		String fileName = ((ChannelSftp.LsEntry) conts.get(0)).getFilename();
+		File directory = new File(destDir);
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+		// 拉取文件
+		sftp.get(srcFile, destDir);
+		// 本地文件路径
+		String destFile = directory.getAbsolutePath() + File.separator + fileName;
+		channel.disconnect();
+		session.disconnect();
+		return destFile;
+	}
 
 	/**
 	 * 连接远程主机
@@ -377,8 +373,8 @@ public class SshUtils {
 	 * @throws BddsException
 	 * @throws JSchException
 	 */
-	private Session connect()  {
-		System.out.println("Initing ssh session with [{}] ......" + hostInfo.ip);
+	private Session connect() throws BddsException {
+		LOGGER.info("Initing ssh session with [{}] ......", hostInfo.ip);
 		Session session = null;
 		try {
 			session = new JSch().getSession(hostInfo.user, hostInfo.ip, hostInfo.port);
@@ -390,7 +386,7 @@ public class SshUtils {
 			// 10秒连接超时
 			session.connect(10000);
 		} catch (JSchException e) {
-			e.printStackTrace();
+			throw new BddsException("please check your config(ip,port,user,password)", e);
 		}
 		return session;
 	}
@@ -414,8 +410,7 @@ public class SshUtils {
 			result = IOUtils.toString(in,encoding);
 			channelExec.disconnect();
 		} catch (JSchException|IOException e) {
-//			LOGGER.error("method: execCommand: execute shell failed !",e);
-			e.printStackTrace();
+			LOGGER.error("method: execCommand: execute shell failed !",e);
 		}
 		return result;
 	}
